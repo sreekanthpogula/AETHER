@@ -9,3 +9,7 @@ screenshots/
 Thumbs.db
 *.log
 .env
+.vercel
+dist/
+.env*
+!.env.example

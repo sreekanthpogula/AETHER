@@ -1,7 +1,7 @@
 // Webcam + MediaPipe HandLandmarker (Tasks API, VIDEO mode). The render loop calls poll() once per frame;
 // detection only runs when the camera delivered a new frame, and timestamps strictly increase.
-const VISION = '../node_modules/@mediapipe/tasks-vision/vision_bundle.mjs';
-const WASM = 'node_modules/@mediapipe/tasks-vision/wasm';
+const VISION = '../vendor/mediapipe/vision_bundle.mjs';     // node_modules/@mediapipe/tasks-vision, see server.mjs / scripts/build.mjs
+const WASM = 'vendor/mediapipe/wasm';
 const MODEL = 'models/hand_landmarker.task';
 
 export class HandCamera {

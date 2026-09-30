@@ -102,7 +102,7 @@ const clean = (s) => String(s || '').replace(/<think>[\s\S]*?<\/think>/gi, '').r
 const pick = (xs) => xs[Math.floor(Math.random() * xs.length)];
 const sentences = (s, n) => (String(s).match(/[^.!?]+[.!?]+/g) || [s]).slice(0, n).join(' ').trim();
 const parseArgs = (c) => { try { const a = c.function?.arguments; return typeof a === 'string' ? JSON.parse(a || '{}') : a || {}; } catch { return {}; } };
-const ADDRESS_KEY = 'aether.address';
+const ADDRESS_KEY = 'aether.address', CODE_KEY = 'aether.code';
 const store = { get: (k) => { try { return localStorage.getItem(k) || ''; } catch { return ''; } }, set: (k, v) => { try { if (v) localStorage.setItem(k, v); else localStorage.removeItem(k); } catch { /* private mode */ } } };
 
 /** Short human label for a tool step in a task card. */
@@ -125,12 +125,16 @@ export class Aether {
     this.history = []; this.busy = false; this.speaking = false; this.followUntil = 0; this.log = [];
     this.agents = Object.fromEntries(Object.keys(AGENTS).map((k) => [k, { state: 'idle', task: '', runs: 0 }]));
     this.tasks = []; this.seq = 0; this._idle = {};
+    const code = new URLSearchParams(location.search).get('code');      // a locked deployment: open it once with ?code=…
+    if (code) store.set(CODE_KEY, code);
   }
+  auth() { const c = store.get(CODE_KEY); return c ? { 'x-aether-code': c } : {}; }
 
   async connect() {
     try {
-      const s = await (await fetch('/api/aether/status')).json();
-      this.online = !!s.online; this.models = s.models || [];
+      const s = await (await fetch('/api/aether/status', { headers: this.auth() })).json();
+      this.online = !!s.online && !(s.locked && !store.get(CODE_KEY)); this.models = s.models || [];
+      if (s.online && !this.online) this.lastError = 'this deployment is locked: open it with ?code=YOUR_CODE';
     } catch { this.online = false; }
     this.h.onState?.();
     return this.online;
@@ -292,7 +296,7 @@ export class Aether {
   }
 
   async llm(messages, tools) {
-    const r = await fetch('/api/aether', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages, tools }) });
+    const r = await fetch('/api/aether', { method: 'POST', headers: { 'Content-Type': 'application/json', ...this.auth() }, body: JSON.stringify({ messages, tools }) });
     const j = await r.json().catch(() => ({}));
     if (!r.ok || !j.message) throw new Error(j.error || `HTTP ${r.status}`);
     this.model = j.model || ''; this.h.onState?.();

@@ -1,0 +1,14 @@
+# never upload secrets or local artefacts to Vercel
+.env
+.env.*
+!.env.example
+node_modules
+dist
+.tmp
+test-results
+playwright-report
+screenshots
+tests
+docs/media/demo.mp4
+docs/media/demo.gif
+docs/media/*.png

@@ -16,8 +16,11 @@ hands and your voice. A team of AI agents works in parallel to show, explain and
 [![OpenRouter](https://img.shields.io/badge/OpenRouter-free%20models-6566f1?style=for-the-badge)](https://openrouter.ai)
 [![Tests](https://img.shields.io/badge/tests-45%20passing-2ea44f?style=for-the-badge&logo=playwright&logoColor=white)](#-testing)
 [![Dependencies](https://img.shields.io/badge/runtime%20deps-1-ffa53a?style=for-the-badge)](package.json)
+[![Live on Vercel](https://img.shields.io/badge/live-vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://aether-psi-seven-78.vercel.app)
 
-[**Quick start**](#-quick-start) · [**Features**](#-features) · [**AI agents**](#-the-ai-agents) · [**Gestures**](#%EF%B8%8F-gestures) · [**How it works**](#-how-it-works) · [**Roadmap**](#%EF%B8%8F-roadmap)
+### [🌐 **Try it live: aether-psi-seven-78.vercel.app**](https://aether-psi-seven-78.vercel.app)
+
+[**Quick start**](#-quick-start) · [**Deploy**](#%EF%B8%8F-deploy-your-own) · [**Features**](#-features) · [**AI agents**](#-the-ai-agents) · [**Gestures**](#%EF%B8%8F-gestures) · [**How it works**](#-how-it-works) · [**Roadmap**](#%EF%B8%8F-roadmap)
 
 <br>
 
@@ -55,7 +58,7 @@ hands and your voice. A team of AI agents works in parallel to show, explain and
 - [Gestures](#%EF%B8%8F-gestures) · [Voice](#%EF%B8%8F-voice) · [Keyboard & mouse](#%EF%B8%8F-keyboard--mouse)
 - [Models](#%EF%B8%8F-models)
 - [How it works](#-how-it-works)
-- [Configuration](#%EF%B8%8F-configuration)
+- [Deploy your own](#%EF%B8%8F-deploy-your-own) · [Configuration](#%EF%B8%8F-configuration)
 - [Testing](#-testing)
 - [Project structure](#-project-structure)
 - [Roadmap](#%EF%B8%8F-roadmap) · [Contributing](#-contributing) · [FAQ & troubleshooting](#-faq--troubleshooting)
@@ -267,6 +270,27 @@ flowchart LR
 | **AI** | Core + 4 specialist agents with OpenAI-style tool calling via OpenRouter, a keyword router and an offline fallback |
 | **Server** | Zero-dependency Node.js static server and API proxy (`server.mjs`) |
 
+## ☁️ Deploy your own
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsreekanthpogula%2FAETHER&env=OPENROUTER_API_KEY&envDescription=Free%20key%20from%20openrouter.ai%2Fkeys%20for%20the%20AI%20agents&envLink=https%3A%2F%2Fopenrouter.ai%2Fkeys&project-name=aether&repository-name=aether)
+
+One click, or from your terminal:
+
+```bash
+npx vercel link
+npx vercel env add OPENROUTER_API_KEY production   # paste your free OpenRouter key
+npx vercel deploy --prod
+```
+
+The static app is built into `dist/` (`scripts/build.mjs` also copies in the MediaPipe runtime), and the brain runs as two
+Vercel functions in `api/aether/` that share `lib/brain.mjs` with the local server.
+
+> [!IMPORTANT]
+> **Your key on a public URL.** The proxy only ever calls OpenRouter's `:free` models, so a deployment can't spend
+> money. It also rejects cross-origin requests and caps the request size. To stop strangers using your free quota, set
+> `AETHER_ACCESS_CODE` in Vercel: visitors then open the site once with `?code=YOUR_CODE` (remembered on that
+> device). Everything else, including gestures, the hologram and the local-rules agents, still works without it.
+
 ## ⚙️ Configuration
 
 **Environment** (in `.env`, see [`.env.example`](.env.example)):
@@ -275,7 +299,9 @@ flowchart LR
 |---|---|---|
 | `OPENROUTER_API_KEY` | none | Turns on the AI brain (`OPEN_ROUTER_KEY` also works) |
 | `OPENROUTER_MODEL` | auto | Comma-separated models to try in order |
-| `AETHER_ALLOW_LAN` | off | Let other devices on your network use the brain |
+| `AETHER_ALLOW_LAN` | off | Let other devices on your network use the brain (local server) |
+| `AETHER_ACCESS_CODE` | none | Require `?code=…` before a deployment's brain answers |
+| `AETHER_ALLOW_PAID` | off | Allow non-`:free` models in `OPENROUTER_MODEL` (costs money) |
 | `PORT` | `5173` | Server port (or `npm start -- 8080`) |
 
 **URL options:**
@@ -287,6 +313,7 @@ flowchart LR
 | `?autostart=camera` / `nocamera` | Skip the start screen |
 | `?holo=0` | Plain particle glow instead of the hologram look |
 | `?address=sir` | What AETHER calls you |
+| `?code=…` | Access code for a locked deployment |
 | `?trails=0` / `?dpr=1` | Turn off trails / force the pixel ratio (for slower GPUs) |
 
 ## 🧪 Testing
@@ -319,7 +346,10 @@ FFMPEG=/path/to/ffmpeg npm run capture   # also encodes demo.mp4 + demo.gif
 
 ```
 index.html · styles.css      page, Stark-style HUD, AETHER console
-server.mjs                   zero-dependency static server + OpenRouter proxy
+server.mjs                   zero-dependency local server (static files + brain API)
+lib/brain.mjs                OpenRouter proxy: free models only, fallback, guards (shared with Vercel)
+api/aether/                  Vercel functions: POST /api/aether, GET /api/aether/status
+vercel.json                  build, headers and function config for Vercel
 src/app.js                   render loop, explode, zoom, 360° view, picking, quiz, HUD, agent UI
 src/aether.js                Core orchestrator, parallel agent tool loops, local brain, weather, Wikipedia, sfx
 src/agents.js                agent roles, tools, prompts and the keyword router
@@ -328,6 +358,7 @@ src/features.js              voice commands, read-aloud, video recorder
 src/gl/                      WebGL2 renderer and shaders (transform-feedback physics, hologram look)
 src/logic/                   gestures, repulsor, state machine, controller, CPU physics twin
 src/models/                  wonders, anatomy, biology, engines, vehicles, machines, stark, enfield
+scripts/build.mjs            static build for Vercel (dist/ + vendor/mediapipe)
 scripts/capture.mjs          regenerates the README screenshots and demo video
 tests/                       Playwright specs
 ```
