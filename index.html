@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AETHER</title>
+  <meta name="description" content="AETHER: a holographic AI workshop. Gesture-controlled 3D particle holograms and a team of AI agents you can talk to.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='22' fill='none' stroke='%2366e0ff' stroke-width='4'/%3E%3Ccircle cx='32' cy='32' r='8' fill='%23ffd166'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Rajdhani:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <canvas id="gl" aria-label="Particle scene"></canvas>
+  <canvas id="overlay" aria-hidden="true"></canvas>
+  <video id="cam" playsinline muted></video>
+
+  <header class="brand">
+    <div class="logo" aria-hidden="true"><span></span></div>
+    <div>
+      <div class="brand-name">AETHER</div>
+      <div class="brand-sub">Adaptive Engine for Thinking, Holograms, Experiments &amp; Reasoning</div>
+    </div>
+  </header>
+
+  <aside id="panel" class="panel glass">
+    <section class="now">
+      <div class="cat" id="cat">Wonders</div>
+      <h1 id="name">Turtle Tower</h1>
+      <p id="fact" class="fact"></p>
+    </section>
+
+    <section class="status">
+      <div class="row">
+        <span class="k">Scene</span><span id="statePill" class="pill" data-state="idle">idle</span>
+      </div>
+      <div class="row">
+        <span class="k">Hand</span><span id="posePill" class="pill pose">no hand</span>
+      </div>
+      <div class="meter">
+        <div class="meter-head"><span class="k">Hand openness</span><b id="openPct">0%</b></div>
+        <div class="bar"><i id="openBar"></i></div>
+      </div>
+      <div id="explodeBox" class="meter explode" hidden>
+        <div class="meter-head"><span class="k">Exploded view</span><b id="explodePct">0%</b></div>
+        <input id="explodeSlider" type="range" min="0" max="100" value="0" aria-label="Exploded view amount">
+        <div class="hint">Open your hand to pull it apart · close it to assemble</div>
+      </div>
+    </section>
+
+    <section>
+      <div class="k">Gestures</div>
+      <ul id="guide" class="guide"></ul>
+    </section>
+
+    <section class="buttons">
+      <button id="bSnap" title="Space">🫰 Snap</button>
+      <button id="bForm" title="F">✊ Form</button>
+      <button id="bOpen" title="O">✋ Release</button>
+      <button id="bNext" title="V / →">✌ Next</button>
+    </section>
+  </aside>
+
+  <div id="bigTitle" class="big-title"><div class="t"></div><div class="s"></div></div>
+
+  <nav id="catalog" class="catalog glass" aria-label="Models">
+    <div id="catTabs" class="tabs" role="tablist"></div>
+    <div id="catChips" class="chips"></div>
+  </nav>
+
+  <section id="partCard" class="part-card glass" hidden aria-live="polite">
+    <div class="phead"><i class="swatch"></i><span class="pname"></span><button id="partClose" class="x" title="Close (Esc)">✕</button></div>
+    <div class="pinfo"></div>
+    <div class="pmodel"></div>
+    <div class="pactions"><button id="partPull">🤏 Pull out</button><button id="partSpeak">🔊 Read aloud</button></div>
+    <div class="phint">Point ☝ at another part · pinch 🤏 to pull this one out</div>
+  </section>
+
+  <section id="quiz" class="quiz glass" hidden aria-live="polite">
+    <div class="q"></div><div class="qs"></div><div class="qf"></div>
+    <button id="quizStop" class="x" title="Stop quiz (Q)">✕</button>
+  </section>
+
+  <div class="top-right">
+    <div id="sys" class="sys glass" aria-label="System readouts">
+      <div id="clock" class="clock">--:--:--</div>
+      <div id="date" class="date"></div>
+      <div id="sysrow" class="sysrow"></div>
+    </div>
+    <div id="stats" class="stats glass"></div>
+    <div class="icons">
+      <button id="bCam" class="icon" title="Camera on/off (C)">📷</button>
+      <button id="bLabels" class="icon on" title="Part labels (L)">🏷️</button>
+      <button id="bRotate" class="icon on" title="Auto-rotate (R)">⟳</button>
+      <button id="bHandRot" class="icon on" title="Hand rotation: twist your hand to turn the model (G)">🔄</button>
+      <button id="bCut" class="icon" title="Cut-away cross-section (X)">✂</button>
+      <button id="bQuiz" class="icon" title="Quiz: find the part (Q)">🎓</button>
+      <button id="bVoice" class="icon" title="Voice commands + read aloud (M)">🎤</button>
+      <button id="bRec" class="icon" title="Record a video (K)">⏺</button>
+      <button id="bDemo" class="icon" title="Play demo (D)">▶</button>
+      <button id="b360" class="icon" title="360° orbit: see every side, top and bottom (Y) · drag to look around · double-click to reset">🌐</button>
+      <button id="bHelp" class="icon" title="Keyboard help (H)">?</button>
+    </div>
+  </div>
+
+  <div id="help" class="help glass" hidden>
+    <h2>Controls</h2>
+    <table>
+      <tr><td><kbd>Space</kbd></td><td>Snap — summon / dissolve</td></tr>
+      <tr><td><kbd>F</kbd> / <kbd>O</kbd></td><td>Fist (form) / Open hand (release)</td></tr>
+      <tr><td><kbd>V</kbd> <kbd>→</kbd> <kbd>←</kbd></td><td>Next / previous model</td></tr>
+      <tr><td><kbd>E</kbd> <kbd>↑</kbd> <kbd>↓</kbd> wheel</td><td>Exploded view (engines &amp; car)</td></tr>
+      <tr><td>twist hand</td><td>Rotate the model (raise / lower = tilt) · <kbd>G</kbd> on/off</td></tr>
+      <tr><td>☝ point · 🤏 pinch</td><td>Pick a part (or click it) · pull it out</td></tr>
+      <tr><td>🙌 two hands</td><td>Zoom (also <kbd>+</kbd> <kbd>-</kbd> <kbd>0</kbd>, ctrl + wheel)</td></tr>
+      <tr><td><kbd>X</kbd> <kbd>,</kbd> <kbd>.</kbd></td><td>Cut-away slice (move hand / mouse)</td></tr>
+      <tr><td><kbd>Q</kbd> <kbd>M</kbd> <kbd>K</kbd> <kbd>I</kbd></td><td>Quiz · voice · record video · describe part</td></tr>
+      <tr><td>drag</td><td>360° view: left/right and up/down, no limits · double-click resets</td></tr>
+      <tr><td><kbd>Y</kbd></td><td>360° orbit: tumble through every side, top and bottom</td></tr>
+      <tr><td><kbd>R</kbd> <kbd>L</kbd> <kbd>T</kbd></td><td>Auto-rotate · labels · trails</td></tr>
+      <tr><td><kbd>C</kbd> <kbd>D</kbd> <kbd>H</kbd></td><td>Camera · demo · this help</td></tr>
+      <tr><td><kbd>J</kbd></td><td>Talk to AETHER (type) · 🎤 then say “Aether, …”</td></tr>
+      <tr><td><kbd>@agent</kbd></td><td>Send a task straight to one agent, e.g. <i>@world weather in Paris</i></td></tr>
+      <tr><td>🖐 push palm</td><td>Repulsor blast</td></tr>
+    </table>
+  </div>
+
+  <section id="aether" class="aether glass" aria-label="AETHER">
+    <div class="ahead">
+      <button id="aOrb" class="orb" data-mode="idle" title="Show / hide AETHER"><i></i><i></i><i></i><i></i></button>
+      <div class="atitle"><div class="aname">AETHER</div><div id="aState" class="astate">local protocols</div></div>
+      <button id="aMin" class="x" title="Minimise">–</button>
+    </div>
+    <div id="aAgents" class="agents" aria-label="Agents"></div>
+    <div id="aLog" class="alog" aria-live="polite"></div>
+    <form id="aForm" class="aform" autocomplete="off">
+      <button type="button" id="aMic" class="icon" title="Voice (M): say “Aether, …”">🎤</button>
+      <input id="aInput" type="text" placeholder="Ask AETHER, or @agent …  (J)" aria-label="Message AETHER">
+      <button type="submit" class="send" title="Send">➤</button>
+    </form>
+  </section>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <div id="start" class="start">
+    <div class="start-card glass">
+      <div class="logo big" aria-hidden="true"><span></span></div>
+      <h1>AETHER</h1>
+      <p class="tag">Adaptive Engine for Thinking, Holograms, Experiments &amp; Reasoning</p>
+      <p>A holographic workshop run by a team of AI agents. Up to a quarter-million particles of light form an arc reactor, the Iron Man helmet, engines, the human heart and more. You control them with your hands and your voice, and AETHER hands each request to the right agent.</p>
+      <ol class="steps">
+        <li><b>Snap</b> your fingers to summon the hologram. Make a <b>fist</b> to form the model.</li>
+        <li><b>Open</b> your hand slowly to explode it into labelled parts. Close it to put it back together.</li>
+        <li><b>Twist</b> to rotate, <b>two hands</b> to zoom, <b>point</b> ☝ at a part to inspect it, <b>pinch</b> 🤏 to pull it out.</li>
+        <li><b>Push your palm</b> at the camera to fire a repulsor.</li>
+        <li>Turn on 🎤 and say <b>“Aether, show me the arc reactor and tell me how it works”</b>, or press <kbd>J</kbd> and type. Watch the Hologram and Knowledge agents work in parallel.</li>
+      </ol>
+      <div class="start-buttons">
+        <button id="bStartCam" class="primary">Initialise with camera</button>
+        <button id="bStartNoCam">Continue without camera</button>
+      </div>
+      <p id="startMsg" class="start-msg"></p>
+    </div>
+  </div>
+
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>
