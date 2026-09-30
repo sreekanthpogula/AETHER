@@ -189,7 +189,10 @@ body::after {                                                   /* faint scan li
 .sysrow { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; font-size: 11px; letter-spacing: 0.06em; color: var(--text); }
 .sysrow i { font-style: normal; color: var(--muted); margin-right: 3px; }
 .help { top: 250px; }
-.part-card, .big-title { top: 262px; }
+.part-card { top: 262px; }
+.big-title { left: 50%; right: auto; top: 78px; text-align: center; transform: translate(-50%, 8px); }   /* above the globe, never over the model */
+.big-title.show { transform: translate(-50%, 0); }
+.big-title .t { font-size: clamp(20px, 2.3vw, 34px); }
 
 /* AETHER console (bottom right): voice orb, agent dots, chat + live task cards */
 .aether { position: fixed; right: 16px; bottom: 112px; width: 380px; z-index: 6; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
@@ -230,8 +233,8 @@ body::after {                                                   /* faint scan li
 .alog { max-height: min(260px, 32vh); overflow-y: auto; display: flex; flex-direction: column; gap: 6px; font-size: 14px; line-height: 1.35; scrollbar-width: thin; }
 .alog:empty::before { content: "Say “Aether, …” with 🎤 on, or type below. Click an agent to task it directly."; color: var(--muted); font-size: 13px; }
 .amsg { padding: 5px 9px; border-radius: 4px; max-width: 92%; }
-.amsg.user { align-self: flex-end; background: rgba(255, 165, 58, 0.12); border: 1px solid rgba(255, 165, 58, 0.3); }
-.amsg.aether { align-self: flex-start; background: rgba(79, 216, 255, 0.09); border: 1px solid rgba(79, 216, 255, 0.28); }
+.amsg.by-user { align-self: flex-end; background: rgba(255, 165, 58, 0.12); border: 1px solid rgba(255, 165, 58, 0.3); }
+.amsg.by-aether { align-self: flex-start; background: rgba(79, 216, 255, 0.09); border: 1px solid rgba(79, 216, 255, 0.28); }
 .atask { --agent: var(--accent); align-self: stretch; margin-left: 10px; border-left: 2px solid var(--agent); padding: 3px 0 3px 9px; font-size: 12.5px; }
 .atask .thead { display: flex; align-items: center; gap: 6px; cursor: pointer; min-width: 0; }
 .atask .thead b { color: var(--agent); font-weight: 700; letter-spacing: 0.04em; flex: none; }
@@ -265,5 +268,6 @@ body::after {                                                   /* faint scan li
   .aether { left: 16px; right: 16px; width: auto; bottom: auto; top: 64px; }
   .aether.min { left: auto; }
   .sys { display: none; }
-  .part-card, .big-title { top: 70px; }
+  .part-card { top: 70px; }
+  .big-title { top: 112px; }
 }

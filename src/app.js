@@ -592,7 +592,7 @@ class App {
   }
   aetherLog(role, text) {
     const el = document.createElement('div');
-    el.className = `amsg ${role}`; el.textContent = text;
+    el.className = `amsg by-${role}`; el.textContent = text;
     this.aetherAppend(el);
     if (role === 'aether') this.$('aether').classList.remove('min');
   }
@@ -729,8 +729,8 @@ class App {
     if (this.orbit || this.t - this.viewT < 2.5) {                       // 360 view readout
       const yawD = Math.round(((((this.spin + this.dragYaw) * 180) / Math.PI) % 360 + 360) % 360), pitchD = Math.round((wrapPi(this.dragPitch + this.pitch) * 180) / Math.PI);
       g.save(); g.globalAlpha = 0.85; g.fillStyle = '#9be8ff'; g.textAlign = 'center';
-      g.font = `600 ${11 * dpr}px Orbitron, Rajdhani, ui-sans-serif, sans-serif`;
-      g.fillText(`${this.orbit ? '◉ 360° ORBIT' : '360° VIEW'} · YAW ${yawD}° · PITCH ${pitchD > 0 ? '+' : ''}${pitchD}°`, cx, cy + rr * 1.3);
+      g.font = `600 ${14 * dpr}px Orbitron, Rajdhani, ui-sans-serif, sans-serif`;
+      g.fillText(`${this.orbit ? '◉ 360° ORBIT' : '360° VIEW'} · YAW ${yawD}° · PITCH ${pitchD > 0 ? '+' : ''}${pitchD}°`, W / 2, 104 * dpr);   // in the title slot (the title hides while you look around)
       g.restore();
     }
     const agents = this.aether.active().filter((x) => x.id !== 'core');   // active agents orbit the hologram
@@ -930,7 +930,7 @@ class App {
       this.guideKey = gk;
       $('guide').innerHTML = this.guideItems(isM).map(([k, e, txt]) => `<li class="${k === hot || (['peace', 'twist', 'point'].includes(k) && st.state === FORMED) ? 'hot' : ''}"><span class="e">${e}</span><span>${txt}</span></li>`).join('');
     }
-    $('bigTitle').classList.toggle('show', st.state === FORMED && formT > 0.8 && this.uploaded === st.index && this.explode < 0.15 && this.sel < 0 && !this.quiz);
+    $('bigTitle').classList.toggle('show', st.state === FORMED && formT > 0.8 && this.uploaded === st.index && this.explode < 0.15 && this.sel < 0 && !this.orbit && this.t - this.viewT > 2.5 && !this.quiz);
     // part card
     const card = $('partCard'), L = this.sel >= 0 && this.model?.labels[this.sel];
     card.hidden = !(L && st.state === FORMED && !this.quiz);

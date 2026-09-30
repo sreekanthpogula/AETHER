@@ -1,7 +1,7 @@
 {
   "name": "aether",
   "version": "1.0.0",
-  "description": "Gesture-controlled 3D wonders, engines and cars made of glowing GPU particles (MediaPipe + WebGL2).",
+  "description": "AETHER: a holographic AI workshop. Gesture-controlled 3D particle holograms (MediaPipe + WebGL2) and a team of AI agents you can talk to.",
   "type": "module",
   "engines": {
     "node": ">=18"
@@ -9,14 +9,33 @@
   "scripts": {
     "start": "node server.mjs",
     "test": "playwright test",
-    "test:report": "playwright show-report"
+    "test:report": "playwright show-report",
+    "capture": "node scripts/capture.mjs"
   },
-  "keywords": ["mediapipe", "webgl2", "particles", "hand-tracking", "gestures"],
+  "keywords": [
+    "ai-agents",
+    "multi-agent",
+    "llm",
+    "openrouter",
+    "hologram",
+    "jarvis",
+    "mediapipe",
+    "webgl2",
+    "particles",
+    "hand-tracking",
+    "gestures",
+    "voice-assistant"
+  ],
   "license": "MIT",
   "dependencies": {
     "@mediapipe/tasks-vision": "^1.0.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sreekanthpogula/AETHER.git"
+  },
+  "homepage": "https://github.com/sreekanthpogula/AETHER#readme"
 }
